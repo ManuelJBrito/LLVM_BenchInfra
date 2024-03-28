@@ -84,7 +84,7 @@ fi
 
 export CC="${C_PATH}clang"
 export CXX="${C_PATH}clang++"
-# export LD=$CXX
+export LD=$CXX
 # export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
 
 

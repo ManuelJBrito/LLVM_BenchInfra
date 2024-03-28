@@ -1,7 +1,7 @@
 #!/bin/sh 
 start_time=$(date +%s%N)
 
-blacklist=":-mno-avx256-split-unaligned-load:-mno-avx256-split-unaligned-store:-menable-experimental-extensions:-matomics:-march=rv64gcv1p0:"
+blacklist=":-mno-avx256-split-unaligned-load:-mno-avx256-split-unaligned-store:-menable-experimental-extensions:-matomics:-march=rv64gcv1p0:-wd654:-V:"
 
 # Remove blacklisted flags from the provided arguments
 new_args=""
@@ -12,16 +12,18 @@ for arg in "$@"; do
     fi
 done
 
-
 # Invoke the Clang compiler with all the provided arguments
-/home/manuel/Documents/llvm/llvm-project/build/bin/clang $new_args $CFLAGS  "-std=gnu99" "-fcf-protection"
+/home/manuel/Documents/llvm/llvm-project/build/bin/clang $new_args $FLAGS  "-std=gnu99" "-fcf-protection" "-Wno-enum-constexpr-conversion" "-ftime-report" 2>> "tmp.log"
 
 
 end_time=$(date +%s%N)
 elapsed_time=$(((end_time - start_time) / 1000000))
 
 # Check if the variable and its parent directory exist
-if [ -n "${COMPILE_TIME_PATH_CUR}" ] && [ -d "$(dirname "${COMPILE_TIME_PATH_CUR}")" ]; then
+if [ -n "${COMPILE_TIME_PATH_CUR}" ] ; then
     # If both the variable and its parent directory exist, execute the command
-    echo "$elapsed_time" >> "${COMPILE_TIME_PATH_CUR}"
+    echo "$elapsed_time" >> "${COMPILE_TIME_PATH_CUR}/${basename}.time"
+    cat "tmp.log" >> "$COMPILE_TIME_PATH_CUR/${basename}.ftime"
 fi
+
+rm "tmp.log"
