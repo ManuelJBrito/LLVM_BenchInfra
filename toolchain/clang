@@ -13,7 +13,7 @@ for arg in "$@"; do
 done
 
 # Invoke the Clang compiler with all the provided arguments
-/home/manuel/Documents/llvm/llvm-project/build/bin/clang $new_args $FLAGS  "-std=gnu99" "-fcf-protection" "-Wno-enum-constexpr-conversion" "-ftime-report" 2>> "tmp.log"
+/home/manuel/Documents/llvm/llvm-project/build/bin/clang $new_args $FLAGS  "-std=gnu99" "-fcf-protection" "-Wno-enum-constexpr-conversion" "-ftime-trace=${COMPILE_TIME_PATH_CUR}"
 
 
 end_time=$(date +%s%N)
@@ -23,7 +23,4 @@ elapsed_time=$(((end_time - start_time) / 1000000))
 if [ -n "${COMPILE_TIME_PATH_CUR}" ] ; then
     # If both the variable and its parent directory exist, execute the command
     echo "$elapsed_time" >> "${COMPILE_TIME_PATH_CUR}/${basename}.time"
-    cat "tmp.log" >> "$COMPILE_TIME_PATH_CUR/${basename}.ftime"
 fi
-
-rm "tmp.log"

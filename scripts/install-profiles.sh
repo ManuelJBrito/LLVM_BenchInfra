@@ -1,12 +1,11 @@
 #!/bin/sh -ex
 LOG_DIR="install-logs"
 mkdir -p $LOG_DIR/pts
-PTS_COMMAND="(trap 'kill 0' INT; "
 for p in $(grep -v '#' ${WORK_ENV}profiles.txt | grep -v '/build-'); do
 
   export basename=$(basename "$p")
   export COMPILE_TIME_PATH_CUR="${COMPILE_TIME_PATH}${basename}/"
-  mkdir -p $COMPILE_TIME_PATH_CUR
+  mkdir -p "${COMPILE_TIME_PATH_CUR}"
 
   COMPILE_FAIL_PATH_CUR="${COMPILE_FAIL_PATH}${basename}"
   COMPILE_STATS_PATH_CUR="${COMPILE_STATS_PATH}${basename}"
@@ -25,18 +24,17 @@ for p in $(grep -v '#' ${WORK_ENV}profiles.txt | grep -v '/build-'); do
   # Extract the total compile time
   compile_time=$(awk '{sum += $1} END {print sum}' "$COMPILE_TIME_PATH_CUR/${basename}.time")
 
-  # Extract the absolute and relative time for GVNPass
-  gvn_time_abs=$(awk '/GVNPass/ {gsub(/\(|\)/, "", $1); gsub("\\.", ",", $1); sum += $1} END {printf "%.4f", sum * 1000}' "$COMPILE_TIME_PATH_CUR/${basename}.ftime")
+  # Extract the total GVN time
+  for json_file in "${COMPILE_TIME_PATH_CUR}/*.json"; do
+    tmp=$(jq '.traceEvents|.[] | select(.name == "Total GVNPass") | .dur ' $json_file)
+    echo "$tmp" >> "$COMPILE_TIME_PATH_CUR/${basename}.gvnpass"
+  done
 
-  gvn_time_abs=$(echo "$gvn_time_abs" | tr ',' '.')
-
-
-  gvn_time_rel=$(awk '/GVNPass/ {gsub(/\(|\)/, "", $3); gsub("\\.", ",", $3); sum += $3; count += 1} END {print (sum/count)}' "$COMPILE_TIME_PATH_CUR/${basename}.ftime")
-
-  gvn_time_rel=$(echo "$gvn_time_rel" | tr ',' '.')
+  gvn_time=$(awk -F '[ ]' '{sum += $1} END {print sum}' "$COMPILE_TIME_PATH_CUR/${basename}.gvnpass")
+  gvn_time=$(echo "scale=2;$gvn_time / 1000" | bc)
 
   # Output compile time results as csv
-  echo "${basename}, ${compile_time}, ${gvn_time_abs}, ${gvn_time_rel}" >"$COMPILE_TIME_PATH_CUR/${basename}.csv"
+  echo "${basename}, ${compile_time}, ${gvn_time}" > "$COMPILE_TIME_PATH_CUR/${basename}.csv"
 
   # Process the file to sum up values associated with "GVN" entries
   res=$(grep -i 'GVN' "$COMPILE_STATS_PATH_CUR" | awk -F ': ' '{
@@ -53,6 +51,3 @@ for p in $(grep -v '#' ${WORK_ENV}profiles.txt | grep -v '/build-'); do
   echo "$res" >"$COMPILE_STATS_PATH_CUR"
 
 done
-PTS_COMMAND=$PTS_COMMAND"wait)"
-
-eval $PTS_COMMAND
