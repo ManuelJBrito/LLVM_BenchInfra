@@ -13,7 +13,7 @@ for arg in "$@"; do
 done
 
 # Invoke the Clang compiler with all the provided arguments
-/home/manuel/Documents/llvm/llvm-project/build/bin/clang $new_args $FLAGS  "-std=gnu99" "-fcf-protection" "-Wno-enum-constexpr-conversion" "-ftime-trace=${COMPILE_TIME_PATH_CUR}"
+${LLVM_PATH}clang $new_args $FLAGS  "-std=gnu99" "-fcf-protection" "-Wno-enum-constexpr-conversion" "-ftime-trace=${COMPILE_TIME_PATH_CUR}"
 
 
 end_time=$(date +%s%N)

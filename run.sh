@@ -34,10 +34,32 @@ fi
 
 PTS_BASE=$(jq -r '.PTS_BASE' "$config_file")
 export WORK_ENV=$(jq -r '.WORK_ENV' "$config_file")
-C_PATH=$(jq -r '.C_PATH' "$config_file")
+TOOLCHAIN_PATH=$(jq -r '.TOOLCHAIN_PATH' "$config_file")
+export LLVM_PATH=$(jq -r '.LLVM_PATH' "$config_file")
 FLAGS=$(jq -r '.FLAGS' "$config_file")
+export PASSFILTER=$(jq -r '.PASSFILTER' "$config_file")
 export NUM_CPU_CORES=$(jq -r '.NUM_CPU_CORES' "$config_file")
 export NUM_CPU_JOBS=$NUM_CPU_CORES
+
+if [ -z "$PTS_BASE" ]; then
+    echo "PTS_BASE is not set in the configuration file."
+    exit 1
+fi
+
+if [ -z "$WORK_ENV" ]; then
+    echo "WORK_ENV is not set in the configuration file."
+    exit 1
+fi
+
+if [ -z "$TOOLCHAIN_PATH" ]; then
+    echo "TOOLCHAIN_PATH is not set in the configuration file."
+    exit 1
+fi
+
+if [ -z "$LLVM_PATH" ]; then
+    echo "LLVM_PATH is not set in the configuration file."
+    exit 1
+fi
 
 # Phoronix-test-suite executable
 PTS_PHP="${PTS_BASE}pts-core/phoronix-test-suite.php"
@@ -77,16 +99,14 @@ export PTS_USER_PATH_OVERRIDE="$WORK_ENV"
 $PTS user-config-set CacheDirectory="$CACHE_PATH" EnvironmentDirectory="$INSTALL_PATH" ResultsDirectory="$RESULTS_PATH"
 
 # Check if the path exists
-if [ ! -d "$C_PATH" ]; then
-    echo "Clang path not found: $C_PATH"
+if [ ! -d "$TOOLCHAIN_PATH" ]; then
+    echo "Clang path not found: $TOOLCHAIN_PATH"
     exit 1
 fi
 
-export CC="${C_PATH}clang"
-export CXX="${C_PATH}clang++"
+export CC="${TOOLCHAIN_PATH}clang"
+export CXX="${TOOLCHAIN_PATH}clang++"
 export LD=$CXX
-# export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
-
 
 # Check if the path exists
 if [ ! -x "$CC" ]; then

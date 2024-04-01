@@ -1,8 +1,10 @@
 {
-  "PTS_BASE": "/home/manuel/Documents/llvm/benchmarks/phoronix-test-suite/",
-  "WORK_ENV": "/home/manuel/Documents/llvm/benchmarks/workdir/",
-  "C_PATH": "/home/manuel/Documents/llvm/benchmarks/workdir/benchmark-infra2/toolchain/",
-  "FLAGS": "-O2 -mllvm -enable-newgvn",
+  "PTS_BASE": "",
+  "WORK_ENV": "",
+  "TOOLCHAIN_PATH": "",
+  "LLVM_PATH": "",
+  "FLAGS": "",
+  "PASSFILTER": "",
   "NUM_CPU_CORES": 1
 }
 
