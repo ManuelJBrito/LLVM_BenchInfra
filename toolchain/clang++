@@ -1,28 +1,27 @@
 #!/bin/sh
 start_time=$(date +%s%N)
 
-blacklist=":-mno-avx256-split-unaligned-load:-mno-avx256-split-unaligned-store:-menable-experimental-extensions:-matomics:-march=rv64gcv1p0:-wd654:-V:"
+blacklist=":-mno-avx256-split-unaligned-load:-mno-avx256-split-unaligned-store:-menable-experimental-extensions:-matomics:-march=rv64gcv1p0:-wd654:-V:-Werror:-Wall:-Wextra:-pedantic:"
 
 # Remove blacklisted flags from the provided arguments
 new_args=""
 for arg in "$@"; do
-    # Check if the argument is not in the blacklist
-    if ! echo "$blacklist" | grep -q ":$arg:"; then
-        new_args="$new_args $arg"
-    fi
+  # Check if the argument is not in the blacklist
+  if ! echo "$blacklist" | grep -q ":$arg:"; then
+    new_args="$new_args $arg"
+  fi
 done
 
 # Invoke the Clang compiler with all the provided arguments
-${LLVM_PATH}clang++ $new_args $FLAGS  "-fcf-protection" "-Wno-enum-constexpr-conversion" "-ftime-trace=${COMPILE_TIME_PATH_CUR}"
+${LLVM_PATH}clang++ $new_args $FLAGS "-fcf-protection" "-Wno-enum-constexpr-conversion" "-ftime-trace=${COMPILE_TIME_PATH_CUR}"
 
+if [ "$install_time" = 1 ]; then
+  end_time=$(date +%s%N)
+  elapsed_time=$(((end_time - start_time) / 1000000))
 
-end_time=$(date +%s%N)
-elapsed_time=$(((end_time - start_time) / 1000000))
-
-# Check if the variable and its parent directory exist
-if [ -n "${COMPILE_TIME_PATH_CUR}" ] ; then
+  # Check if the variable and its parent directory exist
+  if [ -n "${COMPILE_TIME_PATH_CUR}" ]; then
     # If both the variable and its parent directory exist, execute the command
-    echo "$elapsed_time" >> "${COMPILE_TIME_PATH_CUR}/${basename}.time"
+    echo "$elapsed_time" >>"${COMPILE_TIME_PATH_CUR}/${basename}.time"
+  fi
 fi
-
-

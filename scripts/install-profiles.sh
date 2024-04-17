@@ -21,21 +21,22 @@ for p in $(grep -v '#' ${WORK_ENV}profiles.txt | grep -v '/build-'); do
     cp $FAILED_LOG "${COMPILE_FAIL_PATH_CUR}"
   fi
 
-  # Extract the total compile time
-  compile_time=$(awk '{sum += $1} END {print sum}' "$COMPILE_TIME_PATH_CUR/${basename}.time")
+  if [ "$install_time" = 1 ]; then
+    # Extract the total compile time
+    compile_time=$(awk '{sum += $1} END {print sum}' "$COMPILE_TIME_PATH_CUR/${basename}.time")
 
-  # Extract the total Pass time
-  for json_file in "${COMPILE_TIME_PATH_CUR}/*.json"; do
-    tmp=$(jq '.traceEvents|.[] | select(.name == "Total '$PASSFILTER'Pass") | .dur ' $json_file)
-    echo "$tmp" >> "$COMPILE_TIME_PATH_CUR/${basename}.${PASSFILTER}pass"
-  done
+    # Extract the total Pass time
+    for json_file in "${COMPILE_TIME_PATH_CUR}/*.json"; do
+      tmp=$(jq '.traceEvents|.[] | select(.name == "Total '$PASSFILTER'Pass") | .dur ' $json_file)
+      echo "$tmp" >>"$COMPILE_TIME_PATH_CUR/${basename}.${PASSFILTER}pass"
+    done
 
-  pass_time=$(awk -F '[ ]' '{sum += $1} END {print sum}' "$COMPILE_TIME_PATH_CUR/${basename}.${PASSFILTER}pass")
-  pass_time=$(echo "scale=2;$pass_time / 1000" | bc)
+    pass_time=$(awk -F '[ ]' '{sum += $1} END {print sum}' "$COMPILE_TIME_PATH_CUR/${basename}.${PASSFILTER}pass")
+    pass_time=$(echo "scale=2;$pass_time / 1000" | bc)
 
-  # Output compile time results as csv
-  echo "${basename}, ${compile_time}, ${pass_time}" > "$COMPILE_TIME_PATH_CUR/${basename}.csv"
-
+    # Output compile time results as csv
+    echo "${basename}, ${compile_time}, ${pass_time}" >"$COMPILE_TIME_PATH_CUR/${basename}.csv"
+  fi
   # Process the file to sum up values associated with "PASSFILTER" entries
   res=$(grep -i ''$PASSFILTER'' "$COMPILE_STATS_PATH_CUR" | awk -F ': ' '{
       key = $1
