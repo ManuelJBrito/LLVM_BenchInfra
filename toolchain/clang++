@@ -1,7 +1,7 @@
 #!/bin/sh
 start_time=$(date +%s%N)
 
-blacklist=":-mno-avx256-split-unaligned-load:-mno-avx256-split-unaligned-store:-menable-experimental-extensions:-matomics:-march=rv64gcv1p0:-wd654:-V:-Werror:-Wall:-Wextra:-pedantic:"
+blacklist=":-mno-avx256-split-unaligned-load:-mno-avx256-split-unaligned-store:-menable-experimental-extensions:-matomics:-march=rv64gcv1p0:-wd654:-V:-Werror:-Wall:-Wextra:-pedantic:-fprofile-correction:-fprofile-use:"
 
 # Remove blacklisted flags from the provided arguments
 new_args=""
