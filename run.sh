@@ -57,7 +57,7 @@ fi
 
 if [ -z "$WORK_ENV" ]; then
   echo "WORK_ENV is not set in the configuration file."
-  exit 1Set
+  exit 1
 fi
 
 if [ -z "$TOOLCHAIN_PATH" ]; then
