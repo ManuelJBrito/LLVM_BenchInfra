@@ -12,6 +12,9 @@ while [ "$#" -gt 0 ]; do
     --install-time=*)
     install_time="${1#*=}"
     ;;
+    --results=*)
+    results="${1#*=}"
+    ;;
   *)
     echo "Unknown argument: $1"
     exit 1
@@ -23,7 +26,7 @@ done
 # Set default values
 install_only=${install_only:-0} # Set default value to false if not provided
 export install_time=${install_time:-0} # Set default value to false if not provided
-
+results=${results:-0} # Set default value to false if not provided
 
 # Check if the config file is provided
 if [ -z "$config_file" ]; then
@@ -45,6 +48,7 @@ FLAGS=$(jq -r '.FLAGS' "$config_file")
 export PASSFILTER=$(jq -r '.PASSFILTER' "$config_file")
 export NUM_CPU_CORES=$(jq -r '.NUM_CPU_CORES' "$config_file")
 export NUM_CPU_JOBS=$NUM_CPU_CORES
+export CONFIG_NAME=$(jq -r '.CONFIG_NAME' "$config_file")
 
 if [ -z "$PTS_BASE" ]; then
   echo "PTS_BASE is not set in the configuration file."
@@ -53,7 +57,7 @@ fi
 
 if [ -z "$WORK_ENV" ]; then
   echo "WORK_ENV is not set in the configuration file."
-  exit 1
+  exit 1Set
 fi
 
 if [ -z "$TOOLCHAIN_PATH" ]; then
@@ -86,7 +90,7 @@ fi
 # Create working subdirs and files
 CACHE_PATH="${WORK_ENV}download-cache/"
 INSTALL_PATH="${WORK_ENV}installed-tests/"
-RESULTS_PATH="${WORK_ENV}test-results/"
+export RESULTS_PATH="${WORK_ENV}test-results/"
 export COMPILE_RESULTS_PATH="${WORK_ENV}compile-results/"
 export COMPILE_TIME_PATH="${COMPILE_RESULTS_PATH}time/"
 export COMPILE_STATS_PATH="${COMPILE_RESULTS_PATH}stats/"
@@ -101,6 +105,12 @@ mkdir -p "$COMPILE_STATS_PATH" "$COMPILE_TIME_PATH"
 export PTS_USER_PATH_OVERRIDE="$WORK_ENV"
 $PTS user-config-set CacheDirectory="$CACHE_PATH" EnvironmentDirectory="$INSTALL_PATH" ResultsDirectory="$RESULTS_PATH"
 
+# Retrieve results from previous runs
+if [ "$results" = 1 ]; then
+  ./scripts/results.sh
+  exit 0
+fi
+
 # Check if the path exists
 if [ ! -d "$TOOLCHAIN_PATH" ]; then
   echo "Clang path not found: $TOOLCHAIN_PATH"
@@ -110,6 +120,7 @@ fi
 export CC="${TOOLCHAIN_PATH}clang"
 export CXX="${TOOLCHAIN_PATH}clang++"
 export LD=$CXX
+export F77="gfortran"
 
 # Check if the path exists
 if [ ! -x "$CC" ]; then
