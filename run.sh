@@ -12,6 +12,9 @@ while [ "$#" -gt 0 ]; do
     --install-time=*)
     install_time="${1#*=}"
     ;;
+    --reset-install=*)
+    reset_install="${1#*=}"
+    ;;
     --results=*)
     results="${1#*=}"
     ;;
@@ -26,6 +29,7 @@ done
 # Set default values
 install_only=${install_only:-0} # Set default value to false if not provided
 export install_time=${install_time:-0} # Set default value to false if not provided
+reset_install=${reset_install:-1}
 results=${results:-0} # Set default value to false if not provided
 
 # Check if the config file is provided
@@ -95,7 +99,6 @@ export COMPILE_RESULTS_PATH="${WORK_ENV}compile-results/"
 export COMPILE_TIME_PATH="${COMPILE_RESULTS_PATH}time/"
 export COMPILE_STATS_PATH="${COMPILE_RESULTS_PATH}stats/"
 export COMPILE_FAIL_PATH="${COMPILE_RESULTS_PATH}fail/"
-mkdir -p "$CACHE_PATH" "$INSTALL_PATH" "$RESULTS_PATH" "$COMPILE_RESULTS_PATH"
 
 rm -rf "$RESULTS_PATH/*" $COMPILE_RESULTS_PATH/*
 
@@ -119,7 +122,6 @@ fi
 
 export CC="${TOOLCHAIN_PATH}clang"
 export CXX="${TOOLCHAIN_PATH}clang++"
-export LD=$CXX
 export F77="gfortran"
 
 # Check if the path exists
@@ -165,10 +167,10 @@ rm test_program.c test_program.cpp test_program
 export CFLAGS="$FLAGS"
 export CXXFLAGS="$FLAGS"
 
-# Install the profiles
-./scripts/install-profiles.sh
-
-# Run the profiles
-if [ "$install_only" != 1 ]; then
+if [ "$install_only" = 1 ]; then
+  # Install the profiles
+  ./scripts/install-profiles.sh
+else
+  # Profiles are installed if necessary
   ./scripts/run-profiles.sh
 fi
